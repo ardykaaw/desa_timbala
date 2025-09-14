@@ -568,7 +568,7 @@
 @endsection
 
 @push('scripts')
-<script src="{{ app()->environment('local') ? asset('js/admin-berita-simple.js') : url('js/admin-berita-simple.js') }}"></script>
+<script src="{{ asset('js/admin-berita-simple.js') }}"></script>
 <script>
     // Set base URL for API calls
     window.API_BASE_URL = '{{ url("/") }}';

@@ -26,11 +26,15 @@ Thumbs.db
 # Development files
 js/admin-berita-fixed.js
 js/admin-berita-robust.js
-js/admin-berita-simple.js
 js/layanan.js
 js/admin-layanan.js
 js/admin-publikasi.js
 public/css/
 public/dist/
-public/js/
 deploy.sh
+
+# Keep production JavaScript files
+!public/js/admin-berita-simple.js
+!public/js/layanan.js
+!public/js/admin-layanan.js
+!public/js/admin-publikasi.js

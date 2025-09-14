@@ -37,6 +37,7 @@ chmod -R 755 bootstrap/cache
 
 # 7. Copy JavaScript files to public
 echo "📁 Copying JavaScript files..."
+mkdir -p public/js
 cp js/admin-berita-simple.js public/js/admin-berita-simple.js
 cp js/layanan.js public/js/layanan.js
 cp js/admin-layanan.js public/js/admin-layanan.js
