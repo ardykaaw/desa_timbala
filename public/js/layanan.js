@@ -26,12 +26,29 @@ document.addEventListener('DOMContentLoaded', function() {
                 method: 'POST',
                 body: formData,
                 headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
                 }
             })
-            .then(response => response.json())
+            .then(response => {
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+                
+                // Check if response is JSON
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    return response.json();
+                } else {
+                    // If not JSON, get text to see what we got
+                    return response.text().then(text => {
+                        console.error('Non-JSON response received:', text);
+                        throw new Error('Server returned non-JSON response: ' + text.substring(0, 100));
+                    });
+                }
+            })
             .then(data => {
-                console.log('Response:', data);
+                console.log('Response data:', data);
                 if (data.success) {
                     // Show success message
                     showAlert('success', data.message || 'Pengajuan berhasil dikirim!');
@@ -51,7 +68,7 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .catch(error => {
                 console.error('Error:', error);
-                showAlert('error', 'Terjadi kesalahan saat mengirim pengajuan');
+                showAlert('error', 'Terjadi kesalahan saat mengirim pengajuan: ' + error.message);
             })
             .finally(() => {
                 // Reset button
