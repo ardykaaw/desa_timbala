@@ -1,0 +1,29 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Block access to bg_video files (e.g., .mp4 files)
+    RewriteRule ^images/bg/video/.*\.mp4$ - [F,L]
+
+    # Handle Authorization Header (useful for API authentication)
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    # Redirect Trailing Slashes If Not A Folder
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} (.+)/$
+    RewriteRule ^ %1 [L,R=301]
+
+    # Allow direct access to images, css, js, and storage files (static assets)
+    RewriteCond %{REQUEST_FILENAME} -f
+    RewriteRule ^(images|css|js|storage)/.*$ - [L]
+
+    # Allow direct access to storage (for files that are publicly available via the symbolic link)
+    RewriteCond %{REQUEST_URI} ^/storage/
+    RewriteCond %{REQUEST_FILENAME} -f
+    RewriteRule ^ - [L]
+
+    # Send all requests to the Laravel front controller (public/index.php) if not a directory or file
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ index.php [L]
+</IfModule>
