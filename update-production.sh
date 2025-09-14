@@ -19,6 +19,7 @@ php artisan config:clear
 php artisan route:clear
 php artisan view:clear
 php artisan cache:clear
+php artisan services:clear-cache
 
 # 4. Run migrations
 echo "🗄️ Running migrations..."

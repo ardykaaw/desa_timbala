@@ -72,7 +72,18 @@ class AdminController extends Controller
             'fee' => 'nullable|numeric|min:0'
         ]);
 
-        Service::create($request->all());
+        $service = Service::create($request->all());
+        
+        // Clear cache to ensure fresh data
+        \Cache::forget('services_list');
+        \Cache::forget('active_services');
+        
+        // Log for debugging
+        \Log::info('Service created', [
+            'service_id' => $service->id,
+            'service_name' => $service->name,
+            'is_active' => $service->is_active
+        ]);
 
         return response()->json([
             'success' => true,
@@ -98,6 +109,17 @@ class AdminController extends Controller
         ]);
 
         $service->update($request->all());
+        
+        // Clear cache to ensure fresh data
+        \Cache::forget('services_list');
+        \Cache::forget('active_services');
+        
+        // Log for debugging
+        \Log::info('Service updated', [
+            'service_id' => $service->id,
+            'service_name' => $service->name,
+            'is_active' => $service->is_active
+        ]);
 
         return response()->json([
             'success' => true,
@@ -109,6 +131,16 @@ class AdminController extends Controller
     {
         $service = Service::findOrFail($id);
         $service->delete();
+        
+        // Clear cache to ensure fresh data
+        \Cache::forget('services_list');
+        \Cache::forget('active_services');
+        
+        // Log for debugging
+        \Log::info('Service deleted', [
+            'service_id' => $id,
+            'service_name' => $service->name
+        ]);
 
         return response()->json([
             'success' => true,

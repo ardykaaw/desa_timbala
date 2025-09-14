@@ -50,7 +50,17 @@ class WebsiteController extends Controller
 
     public function layanan()
     {
+        // Clear any cached data to ensure fresh data
+        \Cache::forget('services_list');
+        
         $services = Service::active()->orderBy('name')->get();
+        
+        // Log for debugging
+        \Log::info('Layanan method called', [
+            'services_count' => $services->count(),
+            'services' => $services->pluck('name')->toArray()
+        ]);
+        
         return view('sections.layanan', compact('services'));
     }
 
