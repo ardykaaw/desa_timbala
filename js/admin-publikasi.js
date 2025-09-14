@@ -1,394 +1,281 @@
-// Admin Publikasi JavaScript Functions
+// Admin Publikasi JavaScript
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Admin Publikasi JS loaded');
+    
+    // Get base URLs
+    const API_BASE_URL = window.API_BASE_URL || '';
+    const ADMIN_BASE_URL = window.ADMIN_BASE_URL || '';
+    
+    console.log('API_BASE_URL:', API_BASE_URL);
+    console.log('ADMIN_BASE_URL:', ADMIN_BASE_URL);
 
-// Initialize tooltips
-var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-    return new bootstrap.Tooltip(tooltipTriggerEl);
+    // Handle form submission for add publication
+    const publicationForm = document.getElementById('publication-form');
+    if (publicationForm) {
+        publicationForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            console.log('Publication form submitted');
+            
+            const formData = new FormData(this);
+            const submitBtn = document.querySelector('button[form="publication-form"]');
+            
+            if (!submitBtn) {
+                console.error('Submit button not found for publication form');
+                showAlert('error', 'Error: Submit button not found');
+                return;
+            }
+            
+            const originalText = submitBtn.innerHTML;
+            
+            // Show loading state
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Menyimpan...';
+            submitBtn.disabled = true;
+            
+            // Submit form
+            fetch(this.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Response:', data);
+                if (data.success) {
+                    // Close modal
+                    const modalElement = document.getElementById('modal-tambah-publikasi');
+                    if (modalElement) {
+                        const modal = bootstrap.Modal.getInstance(modalElement);
+                        if (modal) {
+                            modal.hide();
+                        }
+                    }
+                    
+                    // Reset form
+                    this.reset();
+                    
+                    // Reload page
+                    window.location.reload();
+                } else {
+                    showAlert('error', data.message || 'Terjadi kesalahan saat menyimpan publikasi');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('error', 'Terjadi kesalahan saat menyimpan publikasi');
+            })
+            .finally(() => {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            });
+        });
+    }
 });
 
-// Form submission for publications
-const publicationForm = document.getElementById('publication-form');
-if (publicationForm) {
-    publicationForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        // Get form data
-        const formData = new FormData(this);
-        
-        // Show loading state
-        const submitBtn = this.querySelector('button[type="submit"]');
-        const originalText = submitBtn.innerHTML;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Menyimpan...';
-        submitBtn.disabled = true;
-        
-        // Determine if it's create or update
-        const isUpdate = this.method === 'PUT';
-        const url = this.action;
-        
-        // Submit form
-        fetch(url, {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                'Accept': 'application/json'
-            }
-        })
-        .then(response => {
-            console.log('Response status:', response.status);
-            if (!response.ok) {
-                return response.text().then(text => {
-                    console.log('Error response:', text);
-                    throw new Error(`HTTP ${response.status}: ${text}`);
-                });
-            }
-            return response.json();
-        })
+// View publication function
+function viewPublication(id) {
+    const API_BASE_URL = window.API_BASE_URL || '';
+    console.log('Viewing publication ID:', id);
+    
+    fetch(`${API_BASE_URL}/admin/publications/${id}`)
+        .then(response => response.json())
         .then(data => {
-            console.log('Response data:', data);
             if (data.success) {
-                // Show success message
-                showAlert('success', data.message);
-                
-                // Close modal
-                const modal = bootstrap.Modal.getInstance(document.getElementById('modal-tambah-publikasi'));
-                if (modal) {
-                    modal.hide();
+                const modalContent = document.getElementById('modal-detail-content');
+                if (modalContent) {
+                    modalContent.innerHTML = `
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="text-center">
+                                    <div class="avatar avatar-xl mb-3" style="background: linear-gradient(135deg, #2c5f2d, #97bc62);">
+                                        <i class="${data.publication.type_icon} text-white" style="font-size: 2rem;"></i>
+                                    </div>
+                                    <h4>${data.publication.title}</h4>
+                                    <span class="badge ${data.publication.type === 'dokumen' ? 'bg-red' : (data.publication.type === 'video' ? 'bg-blue' : (data.publication.type === 'audio' ? 'bg-green' : 'bg-yellow'))} text-light">
+                                        ${data.publication.type.charAt(0).toUpperCase() + data.publication.type.slice(1)}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <h6>Deskripsi:</h6>
+                                    <p>${data.publication.description || 'Tidak ada deskripsi'}</p>
+                                </div>
+                                <div class="mb-3">
+                                    <h6>Informasi File:</h6>
+                                    <ul class="list-unstyled">
+                                        <li><strong>Nama File:</strong> ${data.publication.file_name}</li>
+                                        <li><strong>Ukuran:</strong> ${data.publication.file_size_formatted}</li>
+                                        <li><strong>Download:</strong> ${data.publication.downloads} kali</li>
+                                        <li><strong>Tanggal Upload:</strong> ${data.publication.created_at}</li>
+                                        <li><strong>Status:</strong> 
+                                            <span class="badge ${data.publication.is_active ? 'bg-green' : 'bg-yellow'} text-light">
+                                                ${data.publication.is_active ? 'Aktif' : 'Nonaktif'}
+                                            </span>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="mb-3">
+                                    <h6>Kategori:</h6>
+                                    <span class="badge bg-blue text-light">${data.publication.category || 'Umum'}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
                 }
                 
-                // Reload page to show new data
-                setTimeout(() => {
-                    location.reload();
-                }, 1000);
+                // Show modal
+                const modal = new bootstrap.Modal(document.getElementById('modal-detail'));
+                modal.show();
             } else {
-                showAlert('error', data.message || 'Terjadi kesalahan saat menyimpan publikasi');
+                showAlert('error', 'Gagal memuat detail publikasi');
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            showAlert('error', 'Terjadi kesalahan saat menyimpan publikasi: ' + error.message);
-        })
-        .finally(() => {
-            // Reset button state
-            submitBtn.innerHTML = originalText;
-            submitBtn.disabled = false;
+            showAlert('error', 'Terjadi kesalahan saat memuat detail publikasi');
         });
-    });
 }
 
-// Reset form when modal is hidden
-const modalTambahPublikasi = document.getElementById('modal-tambah-publikasi');
-if (modalTambahPublikasi) {
-    modalTambahPublikasi.addEventListener('hidden.bs.modal', function () {
-        // Reset form
-        const form = document.getElementById('publication-form');
-        if (form) {
-            form.reset();
-            
-            // Reset form action to create
-            form.action = '/admin/publications';
-            form.method = 'POST';
-            
-            // Remove method override
-            const methodInput = form.querySelector('input[name="_method"]');
-            if (methodInput) {
-                methodInput.remove();
-            }
-            
-            // Reset file input
-            const fileInput = form.querySelector('input[name="file"]');
-            if (fileInput) {
-                fileInput.value = '';
-                fileInput.required = true;
-                fileInput.nextElementSibling.innerHTML = '<small class="text-muted">Maksimal 10MB</small>';
-            }
-            
-            // Reset modal title
-            const modalTitle = document.querySelector('#modal-tambah-publikasi .modal-title');
-            if (modalTitle) {
-                modalTitle.innerHTML = '<i class="fas fa-plus me-2"></i>Tambah Publikasi Baru';
-            }
-            
-            // Clear validation errors
-            document.querySelectorAll('.is-invalid').forEach(el => {
-                el.classList.remove('is-invalid');
-            });
-            document.querySelectorAll('.invalid-feedback').forEach(el => {
-                el.remove();
-            });
-        }
-    });
-}
-
-// Search functionality
-const searchInput = document.querySelector('input[placeholder="Cari publikasi..."]');
-if (searchInput) {
-    searchInput.addEventListener('input', function(e) {
-        const searchTerm = e.target.value.toLowerCase();
-        const tableRows = document.querySelectorAll('tbody tr');
-        
-        tableRows.forEach(row => {
-            const title = row.querySelector('.font-weight-medium');
-            if (title && title.textContent.toLowerCase().includes(searchTerm)) {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
-            }
-        });
-    });
-}
-
-// Filter functionality
-const filterButton = document.querySelector('button[class*="btn-primary"]');
-if (filterButton) {
-    filterButton.addEventListener('click', function() {
-        const typeFilter = document.querySelector('select').value;
-        const categoryFilter = document.querySelectorAll('select')[1].value;
-        const tableRows = document.querySelectorAll('tbody tr');
-        
-        tableRows.forEach(row => {
-            let showRow = true;
-            
-            if (typeFilter) {
-                const type = row.querySelector('.badge');
-                if (type && !type.textContent.toLowerCase().includes(typeFilter)) {
-                    showRow = false;
-                }
-            }
-            
-            if (categoryFilter) {
-                const badges = row.querySelectorAll('.badge');
-                if (badges.length > 1 && !badges[1].textContent.toLowerCase().includes(categoryFilter)) {
-                    showRow = false;
-                }
-            }
-            
-            row.style.display = showRow ? '' : 'none';
-        });
-    });
-}
-
-// Delete publication
-function deletePublication(id) {
-    console.log('Delete publication called with ID:', id);
+// Download publication function
+function downloadPublication(id) {
+    const API_BASE_URL = window.API_BASE_URL || '';
+    console.log('Downloading publication ID:', id);
     
+    // Show loading
+    showAlert('info', 'Memulai download...');
+    
+    // Create download link
+    const downloadUrl = `${API_BASE_URL}/admin/publications/${id}/download`;
+    
+    // Create temporary link and click it
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = '';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    // Track download
+    fetch(`${API_BASE_URL}/admin/publications/${id}/track-download`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log('Download tracked successfully');
+        }
+    })
+    .catch(error => {
+        console.error('Error tracking download:', error);
+    });
+}
+
+// Edit publication function
+function editPublication(id) {
+    const API_BASE_URL = window.API_BASE_URL || '';
+    console.log('Editing publication ID:', id);
+    
+    fetch(`${API_BASE_URL}/admin/publications/${id}/edit`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Populate edit form
+                const editForm = document.getElementById('edit-publication-form');
+                if (editForm) {
+                    editForm.querySelector('input[name="title"]').value = data.publication.title;
+                    editForm.querySelector('select[name="type"]').value = data.publication.type;
+                    editForm.querySelector('textarea[name="description"]').value = data.publication.description || '';
+                    editForm.querySelector('select[name="category"]').value = data.publication.category || '';
+                    editForm.querySelector('input[name="author"]').value = data.publication.author || '';
+                    editForm.querySelector('input[name="published_date"]').value = data.publication.published_date || '';
+                    editForm.action = `${API_BASE_URL}/admin/publications/${id}`;
+                    
+                    // Add method override for PUT
+                    let methodInput = editForm.querySelector('input[name="_method"]');
+                    if (!methodInput) {
+                        methodInput = document.createElement('input');
+                        methodInput.type = 'hidden';
+                        methodInput.name = '_method';
+                        editForm.appendChild(methodInput);
+                    }
+                    methodInput.value = 'PUT';
+                }
+                
+                // Show edit modal
+                const modal = new bootstrap.Modal(document.getElementById('modal-edit-publication'));
+                modal.show();
+            } else {
+                showAlert('error', 'Gagal memuat data publikasi');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showAlert('error', 'Terjadi kesalahan saat memuat data publikasi');
+        });
+}
+
+// Delete publication function
+function deletePublication(id) {
     if (confirm('Apakah Anda yakin ingin menghapus publikasi ini? Tindakan ini tidak dapat dibatalkan.')) {
-        // Show loading state
-        showAlert('info', 'Menghapus publikasi...');
+        const API_BASE_URL = window.API_BASE_URL || '';
+        console.log('Deleting publication ID:', id);
         
-        fetch(`/admin/publications/${id}`, {
+        fetch(`${API_BASE_URL}/admin/publications/${id}`, {
             method: 'DELETE',
             headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                'Accept': 'application/json'
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
             }
         })
-        .then(response => {
-            console.log('Delete response status:', response.status);
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
+        .then(response => response.json())
         .then(data => {
-            console.log('Delete response data:', data);
             if (data.success) {
-                showAlert('success', data.message);
-                setTimeout(() => {
-                    location.reload();
-                }, 1000);
+                window.location.reload();
             } else {
                 showAlert('error', data.message || 'Gagal menghapus publikasi');
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            showAlert('error', 'Terjadi kesalahan saat menghapus publikasi: ' + error.message);
+            showAlert('error', 'Terjadi kesalahan saat menghapus publikasi');
         });
     }
 }
 
-// Edit publication function
-function editPublication(id) {
-    console.log('Edit publication called with ID:', id);
-    
-    // Load publication data via AJAX
-    fetch(`/admin/publications/${id}`)
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        return response.json();
-    })
-    .then(data => {
-        if (data.success) {
-            const publication = data.publication;
-            
-            // Populate form with publication data
-            document.querySelector('#publication-form input[name="title"]').value = publication.title;
-            document.querySelector('#publication-form textarea[name="description"]').value = publication.description || '';
-            document.querySelector('#publication-form select[name="type"]').value = publication.type;
-            document.querySelector('#publication-form select[name="category"]').value = publication.category || '';
-            document.querySelector('#publication-form input[name="author"]').value = publication.author || '';
-            document.querySelector('#publication-form input[name="published_date"]').value = publication.published_date || '';
-            
-            // Change form action to update
-            document.getElementById('publication-form').action = `/admin/publications/${id}`;
-            document.getElementById('publication-form').method = 'POST';
-            
-            // Add hidden input for method override
-            let methodInput = document.getElementById('publication-form').querySelector('input[name="_method"]');
-            if (!methodInput) {
-                methodInput = document.createElement('input');
-                methodInput.type = 'hidden';
-                methodInput.name = '_method';
-                methodInput.value = 'PUT';
-                document.getElementById('publication-form').appendChild(methodInput);
-            } else {
-                methodInput.value = 'PUT';
-            }
-            
-            // Change modal title
-            document.querySelector('#modal-tambah-publikasi .modal-title').innerHTML = '<i class="fas fa-edit me-2"></i>Edit Publikasi';
-            
-            // Make file input not required for edit
-            const fileInput = document.querySelector('#publication-form input[name="file"]');
-            if (fileInput) {
-                fileInput.required = false;
-                fileInput.nextElementSibling.innerHTML = '<small class="text-muted">Kosongkan jika tidak ingin mengubah file</small>';
-            }
-            
-            // Show modal
-            const modal = new bootstrap.Modal(document.getElementById('modal-tambah-publikasi'));
-            modal.show();
-        } else {
-            showAlert('error', 'Gagal memuat data publikasi');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showAlert('error', 'Terjadi kesalahan saat memuat data publikasi: ' + error.message);
-    });
-}
-
-// View publication function
-function viewPublication(id) {
-    console.log('View publication called with ID:', id);
-    
-    // Load publication data via AJAX
-    fetch(`/admin/publications/${id}`)
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        return response.json();
-    })
-    .then(data => {
-        if (data.success) {
-            const publication = data.publication;
-            const content = `
-                <div class="row">
-                    <div class="col-md-8">
-                        <h4>${publication.title}</h4>
-                        <div class="d-flex align-items-center mb-3">
-                            <span class="badge ${publication.type === 'dokumen' ? 'bg-red' : (publication.type === 'video' ? 'bg-blue' : (publication.type === 'audio' ? 'bg-green' : 'bg-yellow'))} text-light me-2">${publication.type}</span>
-                            <span class="badge bg-blue text-light me-2">${publication.category || 'Umum'}</span>
-                            <span class="badge ${publication.is_active ? 'bg-green' : 'bg-yellow'} text-light">${publication.is_active ? 'Aktif' : 'Nonaktif'}</span>
-                        </div>
-                        ${publication.description ? `<p>${publication.description}</p>` : ''}
-                        <div class="mt-3">
-                            <button class="btn btn-primary" onclick="downloadPublication(${publication.id})">
-                                <i class="fas fa-download me-2"></i>Download File
-                            </button>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <h6>Informasi File</h6>
-                        <table class="table table-sm">
-                            <tr><td><strong>Nama File:</strong></td><td>${publication.file_name || '-'}</td></tr>
-                            <tr><td><strong>Ukuran:</strong></td><td>${publication.file_size_formatted || '-'}</td></tr>
-                            <tr><td><strong>Tipe:</strong></td><td>${publication.file_type || '-'}</td></tr>
-                            <tr><td><strong>Download:</strong></td><td>${publication.downloads} kali</td></tr>
-                            <tr><td><strong>Penulis:</strong></td><td>${publication.author || '-'}</td></tr>
-                            <tr><td><strong>Dibuat:</strong></td><td>${new Date(publication.created_at).toLocaleDateString('id-ID')}</td></tr>
-                            ${publication.published_date ? `<tr><td><strong>Dipublikasikan:</strong></td><td>${new Date(publication.published_date).toLocaleDateString('id-ID')}</td></tr>` : ''}
-                        </table>
-                    </div>
-                </div>
-            `;
-            
-            // Show modal with publication details
-            document.getElementById('modal-detail-content').innerHTML = content;
-            document.querySelector('#modal-detail .modal-title').innerHTML = 'Detail Publikasi';
-            const modal = new bootstrap.Modal(document.getElementById('modal-detail'));
-            modal.show();
-        } else {
-            showAlert('error', 'Gagal memuat data publikasi');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showAlert('error', 'Terjadi kesalahan saat memuat data publikasi: ' + error.message);
-    });
-}
-
-// Download publication function
-function downloadPublication(id) {
-    console.log('Download publication called with ID:', id);
-    
-    // Show loading state
-    showAlert('info', 'Memulai download...');
-    
-    // Create a temporary link to trigger download
-    const link = document.createElement('a');
-    link.href = `/admin/publications/${id}/download`;
-    link.download = '';
-    link.target = '_blank';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    // Show success message
-    setTimeout(() => {
-        showAlert('success', 'Download berhasil dimulai!');
-    }, 1000);
-}
-
 // Show alert function
 function showAlert(type, message) {
+    // Remove existing alerts
+    const existingAlerts = document.querySelectorAll('.alert-custom');
+    existingAlerts.forEach(alert => alert.remove());
+    
+    // Create alert element
     const alertDiv = document.createElement('div');
-    let alertClass = 'alert-success';
+    alertDiv.className = `alert alert-${type === 'success' ? 'success' : type === 'info' ? 'info' : 'danger'} alert-dismissible fade show alert-custom`;
+    alertDiv.style.position = 'fixed';
+    alertDiv.style.top = '20px';
+    alertDiv.style.right = '20px';
+    alertDiv.style.zIndex = '9999';
+    alertDiv.style.minWidth = '300px';
     
-    switch(type) {
-        case 'error':
-            alertClass = 'alert-danger';
-            break;
-        case 'info':
-            alertClass = 'alert-info';
-            break;
-        case 'warning':
-            alertClass = 'alert-warning';
-            break;
-        default:
-            alertClass = 'alert-success';
-    }
-    
-    alertDiv.className = `alert ${alertClass} alert-dismissible fade show`;
     alertDiv.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'info' ? 'info-circle' : 'exclamation-circle'} me-2"></i>
         ${message}
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     `;
     
-    // Insert at the top of the page
-    const container = document.querySelector('.page-wrapper') || document.querySelector('.container-xl') || document.body;
-    if (container) {
-        container.insertBefore(alertDiv, container.firstChild);
-        
-        // Auto remove after 5 seconds
-        setTimeout(() => {
-            if (alertDiv.parentNode) {
-                alertDiv.remove();
-            }
-        }, 5000);
-    }
+    // Add to body
+    document.body.appendChild(alertDiv);
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.remove();
+        }
+    }, 5000);
 }

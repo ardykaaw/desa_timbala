@@ -1,297 +1,456 @@
-// Admin Layanan JavaScript Functions
+// Admin Layanan JavaScript
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Admin Layanan JS loaded');
+    
+    // Get base URLs
+    const API_BASE_URL = window.API_BASE_URL || '';
+    const ADMIN_BASE_URL = window.ADMIN_BASE_URL || '';
+    
+    console.log('API_BASE_URL:', API_BASE_URL);
+    console.log('ADMIN_BASE_URL:', ADMIN_BASE_URL);
 
-// Initialize tooltips
-var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-    return new bootstrap.Tooltip(tooltipTriggerEl);
+    // Check for error message
+    const errorMessage = document.querySelector('.alert-danger');
+    if (errorMessage) {
+        console.error('Error detected:', errorMessage.textContent);
+        showAlert('error', 'Terjadi kesalahan saat memuat data layanan');
+    }
+
+    // Handle form submission for add service
+    const serviceForm = document.getElementById('form-tambah-layanan');
+    if (serviceForm) {
+        serviceForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            console.log('Service form submitted');
+            
+            const formData = new FormData(this);
+            const submitBtn = document.querySelector('button[form="form-tambah-layanan"]');
+            
+            if (!submitBtn) {
+                console.error('Submit button not found for service form');
+                showAlert('error', 'Error: Submit button not found');
+                return;
+            }
+            
+            const originalText = submitBtn.innerHTML;
+            
+            // Show loading state
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Menyimpan...';
+            submitBtn.disabled = true;
+            
+            // Submit form
+            fetch(this.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Response:', data);
+                if (data.success) {
+                    // Close modal
+                    const modalElement = document.getElementById('modal-tambah-layanan');
+                    if (modalElement) {
+                        const modal = bootstrap.Modal.getInstance(modalElement);
+                        if (modal) {
+                            modal.hide();
+                        }
+                    }
+                    
+                    // Reset form
+                    this.reset();
+                    
+                    // Reload page
+                    window.location.reload();
+                } else {
+                    showAlert('error', data.message || 'Terjadi kesalahan saat menyimpan layanan');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('error', 'Terjadi kesalahan saat menyimpan layanan');
+            })
+            .finally(() => {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            });
+        });
+    }
+
+    // Handle form submission for edit service
+    const editServiceForm = document.getElementById('edit-service-form');
+    if (editServiceForm) {
+        editServiceForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            console.log('Edit service form submitted');
+            
+            const formData = new FormData(this);
+            const submitBtn = document.querySelector('button[form="edit-service-form"]');
+            
+            if (!submitBtn) {
+                console.error('Submit button not found for edit service form');
+                showAlert('error', 'Error: Submit button not found');
+                return;
+            }
+            
+            const originalText = submitBtn.innerHTML;
+            
+            // Show loading state
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Menyimpan...';
+            submitBtn.disabled = true;
+            
+            // Submit form
+            fetch(this.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Response:', data);
+                if (data.success) {
+                    // Close modal
+                    const modalElement = document.getElementById('modal-edit-service');
+                    if (modalElement) {
+                        const modal = bootstrap.Modal.getInstance(modalElement);
+                        if (modal) {
+                            modal.hide();
+                        }
+                    }
+                    
+                    // Reset form
+                    this.reset();
+                    
+                    // Reload page
+                    window.location.reload();
+                } else {
+                    showAlert('error', data.message || 'Terjadi kesalahan saat menyimpan perubahan');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('error', 'Terjadi kesalahan saat menyimpan perubahan');
+            })
+            .finally(() => {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            });
+        });
+    }
+
+    // Handle form submission for update status
+    const statusForm = document.getElementById('form-update-status');
+    if (statusForm) {
+        statusForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            console.log('Status form submitted');
+            
+            const formData = new FormData(this);
+            const requestId = document.getElementById('request_id').value;
+            const submitBtn = this.querySelector('button[type="submit"]');
+            
+            const originalText = submitBtn.innerHTML;
+            
+            // Show loading state
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Mengupdate...';
+            submitBtn.disabled = true;
+            
+            // Submit form
+            fetch(`${API_BASE_URL}/admin/service-requests/${requestId}/update-status`, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Response:', data);
+                if (data.success) {
+                    // Close modal
+                    const modalElement = document.getElementById('modal-status');
+                    if (modalElement) {
+                        const modal = bootstrap.Modal.getInstance(modalElement);
+                        if (modal) {
+                            modal.hide();
+                        }
+                    }
+                    
+                    // Reset form
+                    this.reset();
+                    
+                    // Reload page
+                    window.location.reload();
+                } else {
+                    showAlert('error', data.message || 'Terjadi kesalahan saat mengupdate status');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('error', 'Terjadi kesalahan saat mengupdate status');
+            })
+            .finally(() => {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            });
+        });
+    }
 });
 
-// Reset form when modal is hidden
-const modalTambahLayanan = document.getElementById('modal-tambah-layanan');
-if (modalTambahLayanan) {
-    modalTambahLayanan.addEventListener('hidden.bs.modal', function () {
-        // Reset form
-        const form = document.getElementById('form-tambah-layanan');
-        if (form) {
-            form.reset();
-            
-            // Reset form action to create
-            form.action = '/admin/services';
-            form.method = 'POST';
-            
-            // Remove method override
-            const methodInput = form.querySelector('input[name="_method"]');
-            if (methodInput) {
-                methodInput.remove();
-            }
-            
-            // Reset modal title
-            const modalTitle = document.querySelector('#modal-tambah-layanan .modal-title');
-            if (modalTitle) {
-                modalTitle.innerHTML = '<i class="fas fa-plus me-2"></i>Tambah Layanan Baru';
-            }
-            
-            // Clear validation errors
-            document.querySelectorAll('.is-invalid').forEach(el => {
-                el.classList.remove('is-invalid');
-            });
-            document.querySelectorAll('.invalid-feedback').forEach(el => {
-                el.remove();
-            });
-        }
-    });
-}
-
-// Search functionality
-const searchInput = document.querySelector('input[placeholder="Cari layanan..."]');
-if (searchInput) {
-    searchInput.addEventListener('input', function(e) {
-        const searchTerm = e.target.value.toLowerCase();
-        const serviceCards = document.querySelectorAll('.service-card');
-        
-        serviceCards.forEach(card => {
-            const title = card.querySelector('h4').textContent.toLowerCase();
-            if (title.includes(searchTerm)) {
-                card.closest('.col-md-6').style.display = '';
-            } else {
-                card.closest('.col-md-6').style.display = 'none';
-            }
-        });
-    });
-}
-
-// Filter functionality
-const filterButton = document.querySelector('button[class*="btn-primary"]');
-if (filterButton) {
-    filterButton.addEventListener('click', function() {
-        const categoryFilter = document.querySelector('select').value;
-        const statusFilter = document.querySelectorAll('select')[1].value;
-        const serviceCards = document.querySelectorAll('.service-card');
-        
-        serviceCards.forEach(card => {
-            let showCard = true;
-            
-            if (categoryFilter) {
-                // This would need to be implemented based on data attributes
-                // For now, just show all cards
-            }
-            
-            if (statusFilter) {
-                const status = card.querySelector('.badge').textContent.toLowerCase();
-                if (!status.includes(statusFilter)) {
-                    showCard = false;
-                }
-            }
-            
-            card.closest('.col-md-6').style.display = showCard ? '' : 'none';
-        });
-    });
-}
-
-// Form submission for services
-const formTambahLayanan = document.getElementById('form-tambah-layanan');
-if (formTambahLayanan) {
-    formTambahLayanan.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        // Get form data
-        const formData = new FormData(this);
-        
-        // Show loading state
-        const submitBtn = this.querySelector('button[type="submit"]');
-        const originalText = submitBtn.innerHTML;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Menyimpan...';
-        submitBtn.disabled = true;
-        
-        // Determine if it's create or update
-        const isUpdate = this.method === 'PUT';
-        const url = this.action;
-        
-        // Submit form
-        fetch(url, {
-            method: isUpdate ? 'PUT' : 'POST',
-            body: formData,
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                'Accept': 'application/json'
-            }
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
+// View service function
+function viewService(id) {
+    const API_BASE_URL = window.API_BASE_URL || '';
+    console.log('Viewing service ID:', id);
+    
+    fetch(`${API_BASE_URL}/admin/services/${id}`)
+        .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Show success message
-                showAlert('success', data.message);
+                const modalContent = document.getElementById('modal-detail-content');
+                if (modalContent) {
+                    modalContent.innerHTML = `
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="text-center">
+                                    <div class="avatar avatar-xl mb-3" style="background: linear-gradient(135deg, #2c5f2d, #97bc62);">
+                                        <i class="fas fa-${data.service.icon || 'cog'} text-white" style="font-size: 2rem;"></i>
+                                    </div>
+                                    <h4>${data.service.name}</h4>
+                                    <span class="badge ${data.service.type === 'online' ? 'bg-green' : 'bg-yellow'} text-light">
+                                        ${data.service.type.charAt(0).toUpperCase() + data.service.type.slice(1)}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <h6>Deskripsi:</h6>
+                                    <p>${data.service.description}</p>
+                                </div>
+                                <div class="mb-3">
+                                    <h6>Informasi Layanan:</h6>
+                                    <ul class="list-unstyled">
+                                        <li><strong>Kategori:</strong> ${data.service.category}</li>
+                                        <li><strong>Hari Proses:</strong> ${data.service.processing_days} hari</li>
+                                        <li><strong>Biaya:</strong> Rp ${data.service.fee ? data.service.fee.toLocaleString() : '0'}</li>
+                                        <li><strong>Status:</strong> 
+                                            <span class="badge ${data.service.is_active ? 'bg-success' : 'bg-warning'} text-light">
+                                                ${data.service.is_active ? 'Aktif' : 'Nonaktif'}
+                                            </span>
+                                        </li>
+                                    </ul>
+                                </div>
+                                ${data.service.requirements ? `
+                                <div class="mb-3">
+                                    <h6>Persyaratan:</h6>
+                                    <p>${data.service.requirements}</p>
+                                </div>
+                                ` : ''}
+                                ${data.service.procedures ? `
+                                <div class="mb-3">
+                                    <h6>Prosedur:</h6>
+                                    <p>${data.service.procedures}</p>
+                                </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                }
                 
-                // Close modal
-                const modal = bootstrap.Modal.getInstance(document.getElementById('modal-tambah-layanan'));
-                modal.hide();
-                
-                // Reload page to show new data
-                setTimeout(() => {
-                    location.reload();
-                }, 1000);
+                // Show modal
+                const modal = new bootstrap.Modal(document.getElementById('modal-detail'));
+                modal.show();
             } else {
-                showAlert('error', data.message || 'Terjadi kesalahan saat menyimpan layanan');
+                showAlert('error', 'Gagal memuat detail layanan');
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            showAlert('error', 'Terjadi kesalahan saat menyimpan layanan: ' + error.message);
-        })
-        .finally(() => {
-            // Reset button state
-            submitBtn.innerHTML = originalText;
-            submitBtn.disabled = false;
+            showAlert('error', 'Terjadi kesalahan saat memuat detail layanan');
         });
-    });
 }
 
-// Update status form submission
-const formUpdateStatus = document.getElementById('form-update-status');
-if (formUpdateStatus) {
-    formUpdateStatus.addEventListener('submit', function(e) {
-        e.preventDefault();
+// Edit service function
+function editService(id) {
+    const API_BASE_URL = window.API_BASE_URL || '';
+    console.log('Editing service ID:', id);
+    
+    fetch(`${API_BASE_URL}/admin/services/${id}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Show edit modal first
+                const modalElement = document.getElementById('modal-edit-service');
+                if (!modalElement) {
+                    console.error('Edit modal not found');
+                    showAlert('error', 'Modal edit tidak ditemukan');
+                    return;
+                }
+                
+                // Create modal instance safely
+                let modal;
+                try {
+                    modal = new bootstrap.Modal(modalElement, {
+                        backdrop: true,
+                        keyboard: true,
+                        focus: true
+                    });
+                } catch (error) {
+                    console.error('Error creating modal:', error);
+                    showAlert('error', 'Gagal membuka modal edit');
+                    return;
+                }
+                
+                // Populate edit form after modal is shown
+                modalElement.addEventListener('shown.bs.modal', function() {
+                    const editForm = document.getElementById('edit-service-form');
+                    if (editForm) {
+                        editForm.querySelector('input[name="name"]').value = data.service.name;
+                        editForm.querySelector('select[name="category"]').value = data.service.category;
+                        editForm.querySelector('textarea[name="description"]').value = data.service.description;
+                        editForm.querySelector('select[name="type"]').value = data.service.type;
+                        editForm.querySelector('select[name="icon"]').value = data.service.icon || '';
+                        editForm.querySelector('input[name="processing_days"]').value = data.service.processing_days;
+                        editForm.querySelector('input[name="fee"]').value = data.service.fee || 0;
+                        editForm.querySelector('textarea[name="requirements"]').value = data.service.requirements || '';
+                        editForm.querySelector('textarea[name="procedures"]').value = data.service.procedures || '';
+                        
+                        // Handle checkbox for is_active
+                        const isActiveCheckbox = editForm.querySelector('input[name="is_active"]');
+                        if (isActiveCheckbox) {
+                            isActiveCheckbox.checked = data.service.is_active;
+                        }
+                        
+                        editForm.action = `${API_BASE_URL}/admin/services/${id}`;
+                        
+                        // Add method override for PUT
+                        let methodInput = editForm.querySelector('input[name="_method"]');
+                        if (!methodInput) {
+                            methodInput = document.createElement('input');
+                            methodInput.type = 'hidden';
+                            methodInput.name = '_method';
+                            editForm.appendChild(methodInput);
+                        }
+                        methodInput.value = 'PUT';
+                    }
+                }, { once: true });
+                
+                // Show modal
+                modal.show();
+            } else {
+                showAlert('error', 'Gagal memuat data layanan');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showAlert('error', 'Terjadi kesalahan saat memuat data layanan');
+        });
+}
+
+// Delete service function
+function deleteService(id) {
+    if (confirm('Apakah Anda yakin ingin menghapus layanan ini? Tindakan ini tidak dapat dibatalkan.')) {
+        const API_BASE_URL = window.API_BASE_URL || '';
+        console.log('Deleting service ID:', id);
         
-        const formData = new FormData(this);
-        const requestId = formData.get('request_id');
-        
-        // Show loading state
-        const submitBtn = this.querySelector('button[type="submit"]');
-        const originalText = submitBtn.innerHTML;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Mengupdate...';
-        submitBtn.disabled = true;
-        
-        // Submit form
-        fetch(`/admin/service-requests/${requestId}/update-status`, {
-            method: 'POST',
-            body: formData,
+        fetch(`${API_BASE_URL}/admin/services/${id}`, {
+            method: 'DELETE',
             headers: {
+                'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
             }
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                showAlert('success', data.message);
-                
-                // Close modal
-                const modal = bootstrap.Modal.getInstance(document.getElementById('modal-status'));
-                modal.hide();
-                
-                // Reload page to show updated data
-                setTimeout(() => {
-                    location.reload();
-                }, 1000);
+                window.location.reload();
             } else {
-                showAlert('error', data.message || 'Terjadi kesalahan saat mengupdate status');
+                showAlert('error', data.message || 'Gagal menghapus layanan');
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            showAlert('error', 'Terjadi kesalahan saat mengupdate status');
-        })
-        .finally(() => {
-            // Reset button state
-            submitBtn.innerHTML = originalText;
-            submitBtn.disabled = false;
+            showAlert('error', 'Terjadi kesalahan saat menghapus layanan');
         });
-    });
+    }
 }
 
 // View request function
 function viewRequest(id) {
-    console.log('View request called with ID:', id);
+    const API_BASE_URL = window.API_BASE_URL || '';
+    console.log('Viewing request ID:', id);
     
-    // Show loading state
-    document.getElementById('modal-detail-content').innerHTML = `
-        <div class="text-center py-4">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-            <p class="mt-2">Memuat detail pengajuan...</p>
-        </div>
-    `;
-    
-    // Show modal first
-    const modal = new bootstrap.Modal(document.getElementById('modal-detail'));
-    modal.show();
-    
-    // Load request details via AJAX
-    fetch(`/admin/service-requests/${id}`)
-    .then(response => {
-        console.log('Response status:', response.status);
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        return response.json();
-    })
-    .then(data => {
-        console.log('Response data:', data);
-        if (data.success) {
-            const request = data.request;
-            const content = `
-                <div class="row">
-                    <div class="col-md-6">
-                        <h6>Informasi Pengajuan</h6>
-                        <table class="table table-sm">
-                            <tr><td><strong>No. Pengajuan:</strong></td><td>${request.request_number}</td></tr>
-                            <tr><td><strong>Layanan:</strong></td><td>${request.service.name}</td></tr>
-                            <tr><td><strong>Status:</strong></td><td><span class="badge ${request.status_badge} text-light">${request.status_text}</span></td></tr>
-                            <tr><td><strong>Tanggal:</strong></td><td>${new Date(request.created_at).toLocaleDateString('id-ID')}</td></tr>
-                        </table>
-                    </div>
-                    <div class="col-md-6">
-                        <h6>Data Pemohon</h6>
-                        <table class="table table-sm">
-                            <tr><td><strong>Nama:</strong></td><td>${request.full_name}</td></tr>
-                            <tr><td><strong>NIK:</strong></td><td>${request.nik}</td></tr>
-                            <tr><td><strong>Tempat/Tgl Lahir:</strong></td><td>${request.birth_place}, ${new Date(request.birth_date).toLocaleDateString('id-ID')}</td></tr>
-                            <tr><td><strong>Jenis Kelamin:</strong></td><td>${request.gender}</td></tr>
-                            <tr><td><strong>Alamat:</strong></td><td>${request.address}</td></tr>
-                            <tr><td><strong>Telepon:</strong></td><td>${request.phone}</td></tr>
-                            <tr><td><strong>Email:</strong></td><td>${request.email || '-'}</td></tr>
-                        </table>
-                    </div>
-                </div>
-                ${request.additional_info ? `<div class="mt-3"><h6>Keterangan Tambahan</h6><p>${request.additional_info}</p></div>` : ''}
-                ${request.admin_notes ? `<div class="mt-3"><h6>Catatan Admin</h6><p>${request.admin_notes}</p></div>` : ''}
-            `;
-            
-            document.getElementById('modal-detail-content').innerHTML = content;
-        } else {
-            document.getElementById('modal-detail-content').innerHTML = `
-                <div class="alert alert-danger">
-                    <i class="fas fa-exclamation-triangle me-2"></i>
-                    Gagal memuat detail pengajuan: ${data.message || 'Terjadi kesalahan'}
-                </div>
-            `;
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        document.getElementById('modal-detail-content').innerHTML = `
-            <div class="alert alert-danger">
-                <i class="fas fa-exclamation-triangle me-2"></i>
-                Terjadi kesalahan saat memuat detail pengajuan: ${error.message}
-            </div>
-        `;
-    });
+    fetch(`${API_BASE_URL}/admin/service-requests/${id}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const modalContent = document.getElementById('modal-detail-content');
+                if (modalContent) {
+                    modalContent.innerHTML = `
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Informasi Pengajuan</h6>
+                                <ul class="list-unstyled">
+                                    <li><strong>No. Pengajuan:</strong> ${data.request.request_number}</li>
+                                    <li><strong>Nama:</strong> ${data.request.full_name}</li>
+                                    <li><strong>NIK:</strong> ${data.request.nik}</li>
+                                    <li><strong>Tempat Lahir:</strong> ${data.request.birth_place}</li>
+                                    <li><strong>Tanggal Lahir:</strong> ${data.request.birth_date}</li>
+                                    <li><strong>Jenis Kelamin:</strong> ${data.request.gender}</li>
+                                    <li><strong>Alamat:</strong> ${data.request.address}</li>
+                                    <li><strong>Telepon:</strong> ${data.request.phone}</li>
+                                    <li><strong>Email:</strong> ${data.request.email || 'Tidak ada'}</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Detail Layanan</h6>
+                                <ul class="list-unstyled">
+                                    <li><strong>Layanan:</strong> ${data.request.service.name}</li>
+                                    <li><strong>Kategori:</strong> ${data.request.service.category}</li>
+                                    <li><strong>Status:</strong> 
+                                        <span class="badge ${data.request.status === 'pending' ? 'bg-warning' : (data.request.status === 'processing' ? 'bg-info' : (data.request.status === 'completed' ? 'bg-success' : 'bg-danger'))} text-light">
+                                            ${data.request.status_text}
+                                        </span>
+                                    </li>
+                                    <li><strong>Tanggal Pengajuan:</strong> ${data.request.created_at}</li>
+                                    ${data.request.processed_at ? `<li><strong>Tanggal Diproses:</strong> ${data.request.processed_at}</li>` : ''}
+                                    ${data.request.completed_at ? `<li><strong>Tanggal Selesai:</strong> ${data.request.completed_at}</li>` : ''}
+                                </ul>
+                                ${data.request.additional_info ? `
+                                <h6>Keterangan Tambahan</h6>
+                                <p>${data.request.additional_info}</p>
+                                ` : ''}
+                                ${data.request.admin_notes ? `
+                                <h6>Catatan Admin</h6>
+                                <p>${data.request.admin_notes}</p>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                // Show modal
+                const modal = new bootstrap.Modal(document.getElementById('modal-detail'));
+                modal.show();
+            } else {
+                showAlert('error', 'Gagal memuat detail pengajuan');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showAlert('error', 'Terjadi kesalahan saat memuat detail pengajuan');
+        });
 }
 
 // Update status function
 function updateStatus(id) {
-    console.log('Update status called with ID:', id);
+    const API_BASE_URL = window.API_BASE_URL || '';
+    console.log('Updating status for request ID:', id);
     
     // Set request ID
-    document.getElementById('request_id').value = id;
-    
-    // Reset form
-    document.getElementById('form-update-status').reset();
     document.getElementById('request_id').value = id;
     
     // Show modal
@@ -299,189 +458,34 @@ function updateStatus(id) {
     modal.show();
 }
 
-// Edit service function
-function editService(id) {
-    console.log('Edit service called with ID:', id);
-    
-    // Load service data via AJAX
-    fetch(`/admin/services/${id}`)
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        return response.json();
-    })
-    .then(data => {
-        if (data.success) {
-            const service = data.service;
-            
-            // Populate form with service data
-            document.querySelector('#form-tambah-layanan input[name="name"]').value = service.name;
-            document.querySelector('#form-tambah-layanan select[name="category"]').value = service.category;
-            document.querySelector('#form-tambah-layanan textarea[name="description"]').value = service.description;
-            document.querySelector('#form-tambah-layanan select[name="type"]').value = service.type;
-            document.querySelector('#form-tambah-layanan select[name="icon"]').value = service.icon || 'id-card';
-            document.querySelector('#form-tambah-layanan input[name="processing_days"]').value = service.processing_days || 3;
-            document.querySelector('#form-tambah-layanan input[name="fee"]').value = service.fee || 0;
-            document.querySelector('#form-tambah-layanan textarea[name="requirements"]').value = service.requirements || '';
-            document.querySelector('#form-tambah-layanan textarea[name="procedures"]').value = service.procedures || '';
-            
-            // Change form action to update
-            document.getElementById('form-tambah-layanan').action = `/admin/services/${id}`;
-            document.getElementById('form-tambah-layanan').method = 'PUT';
-            
-            // Add hidden input for method override
-            let methodInput = document.getElementById('form-tambah-layanan').querySelector('input[name="_method"]');
-            if (!methodInput) {
-                methodInput = document.createElement('input');
-                methodInput.type = 'hidden';
-                methodInput.name = '_method';
-                methodInput.value = 'PUT';
-                document.getElementById('form-tambah-layanan').appendChild(methodInput);
-            } else {
-                methodInput.value = 'PUT';
-            }
-            
-            // Change modal title
-            document.querySelector('#modal-tambah-layanan .modal-title').innerHTML = '<i class="fas fa-edit me-2"></i>Edit Layanan';
-            
-            // Show modal
-            const modal = new bootstrap.Modal(document.getElementById('modal-tambah-layanan'));
-            modal.show();
-        } else {
-            showAlert('error', 'Gagal memuat data layanan');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showAlert('error', 'Terjadi kesalahan saat memuat data layanan: ' + error.message);
-    });
-}
-
-// Delete service function
-function deleteService(id) {
-    console.log('Delete service called with ID:', id);
-    
-    if (confirm('Apakah Anda yakin ingin menghapus layanan ini? Tindakan ini tidak dapat dibatalkan.')) {
-        // Show loading state
-        showAlert('info', 'Menghapus layanan...');
-        
-        fetch(`/admin/services/${id}`, {
-            method: 'DELETE',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                'Accept': 'application/json'
-            }
-        })
-        .then(response => {
-            console.log('Delete response status:', response.status);
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log('Delete response data:', data);
-            if (data.success) {
-                showAlert('success', data.message);
-                setTimeout(() => {
-                    location.reload();
-                }, 1000);
-            } else {
-                showAlert('error', data.message || 'Gagal menghapus layanan');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showAlert('error', 'Terjadi kesalahan saat menghapus layanan: ' + error.message);
-        });
-    }
-}
-
-// View service function
-function viewService(id) {
-    console.log('View service called with ID:', id);
-    
-    // Load service data via AJAX
-    fetch(`/admin/services/${id}`)
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        return response.json();
-    })
-    .then(data => {
-        if (data.success) {
-            const service = data.service;
-            const content = `
-                <div class="row">
-                    <div class="col-md-6">
-                        <h6>Informasi Layanan</h6>
-                        <table class="table table-sm">
-                            <tr><td><strong>Nama:</strong></td><td>${service.name}</td></tr>
-                            <tr><td><strong>Kategori:</strong></td><td>${service.category}</td></tr>
-                            <tr><td><strong>Tipe:</strong></td><td><span class="badge ${service.type === 'online' ? 'bg-green' : 'bg-yellow'} text-light">${service.type}</span></td></tr>
-                            <tr><td><strong>Hari Proses:</strong></td><td>${service.processing_days} hari</td></tr>
-                            <tr><td><strong>Biaya:</strong></td><td>Rp ${service.fee ? service.fee.toLocaleString('id-ID') : '0'}</td></tr>
-                        </table>
-                    </div>
-                    <div class="col-md-6">
-                        <h6>Deskripsi</h6>
-                        <p>${service.description}</p>
-                        ${service.requirements ? `<h6>Persyaratan</h6><p>${service.requirements}</p>` : ''}
-                        ${service.procedures ? `<h6>Prosedur</h6><p>${service.procedures}</p>` : ''}
-                    </div>
-                </div>
-            `;
-            
-            // Show modal with service details
-            document.getElementById('modal-detail-content').innerHTML = content;
-            document.querySelector('#modal-detail .modal-title').innerHTML = 'Detail Layanan';
-            const modal = new bootstrap.Modal(document.getElementById('modal-detail'));
-            modal.show();
-        } else {
-            showAlert('error', 'Gagal memuat data layanan');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showAlert('error', 'Terjadi kesalahan saat memuat data layanan: ' + error.message);
-    });
-}
-
 // Show alert function
 function showAlert(type, message) {
+    // Remove existing alerts
+    const existingAlerts = document.querySelectorAll('.alert-custom');
+    existingAlerts.forEach(alert => alert.remove());
+    
+    // Create alert element
     const alertDiv = document.createElement('div');
-    let alertClass = 'alert-success';
+    alertDiv.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show alert-custom`;
+    alertDiv.style.position = 'fixed';
+    alertDiv.style.top = '20px';
+    alertDiv.style.right = '20px';
+    alertDiv.style.zIndex = '9999';
+    alertDiv.style.minWidth = '300px';
     
-    switch(type) {
-        case 'error':
-            alertClass = 'alert-danger';
-            break;
-        case 'info':
-            alertClass = 'alert-info';
-            break;
-        case 'warning':
-            alertClass = 'alert-warning';
-            break;
-        default:
-            alertClass = 'alert-success';
-    }
-    
-    alertDiv.className = `alert ${alertClass} alert-dismissible fade show`;
     alertDiv.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} me-2"></i>
         ${message}
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     `;
     
-    // Insert at the top of the page
-    const container = document.querySelector('.page-wrapper');
-    if (container) {
-        container.insertBefore(alertDiv, container.firstChild);
-        
-        // Auto remove after 5 seconds
-        setTimeout(() => {
+    // Add to body
+    document.body.appendChild(alertDiv);
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
             alertDiv.remove();
-        }, 5000);
-    }
+        }
+    }, 5000);
 }

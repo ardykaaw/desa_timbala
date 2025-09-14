@@ -49,16 +49,9 @@
                                         <label class="form-label required">Jenis Layanan</label>
                                         <select name="service_type" class="form-select" required>
                                             <option value="">Pilih Jenis Layanan</option>
-                                            <option value="Kartu Tanda Penduduk (KTP)">Kartu Tanda Penduduk (KTP)</option>
-                                            <option value="Kartu Keluarga (KK)">Kartu Keluarga (KK)</option>
-                                            <option value="Surat Keterangan Domisili">Surat Keterangan Domisili</option>
-                                            <option value="Surat Keterangan Usaha">Surat Keterangan Usaha</option>
-                                            <option value="Surat Keterangan Belum Menikah">Surat Keterangan Belum Menikah</option>
-                                            <option value="Surat Keterangan Penghasilan">Surat Keterangan Penghasilan</option>
-                                            <option value="Surat Izin Keramaian">Surat Izin Keramaian</option>
-                                            <option value="Surat Izin Bepergian">Surat Izin Bepergian</option>
-                                            <option value="Surat Keterangan Tidak Mampu">Surat Keterangan Tidak Mampu</option>
-                                            <option value="Surat Keterangan Lahir">Surat Keterangan Lahir</option>
+                                            @foreach($services as $service)
+                                                <option value="{{ $service->name }}">{{ $service->name }}</option>
+                                            @endforeach
                                         </select>
                                     </div>
                                     <div class="col-md-6 mb-3">
@@ -131,46 +124,15 @@
                             <div class="mb-3">
                                 <h4 class="text-primary">Layanan Tersedia</h4>
                                 <ul class="list-unstyled">
+                                    @foreach($services as $service)
                                     <li class="mb-2">
                                         <i class="ti ti-check text-success me-2"></i>
-                                        Kartu Tanda Penduduk (KTP)
+                                        {{ $service->name }}
+                                        <span class="badge {{ $service->type === 'online' ? 'bg-success' : 'bg-warning' }} text-light ms-2">
+                                            {{ ucfirst($service->type) }}
+                                        </span>
                                     </li>
-                                    <li class="mb-2">
-                                        <i class="ti ti-check text-success me-2"></i>
-                                        Kartu Keluarga (KK)
-                                    </li>
-                                    <li class="mb-2">
-                                        <i class="ti ti-check text-success me-2"></i>
-                                        Surat Keterangan Domisili
-                                    </li>
-                                    <li class="mb-2">
-                                        <i class="ti ti-check text-success me-2"></i>
-                                        Surat Keterangan Usaha
-                                    </li>
-                                    <li class="mb-2">
-                                        <i class="ti ti-check text-success me-2"></i>
-                                        Surat Keterangan Belum Menikah
-                                    </li>
-                                    <li class="mb-2">
-                                        <i class="ti ti-check text-success me-2"></i>
-                                        Surat Keterangan Penghasilan
-                                    </li>
-                                    <li class="mb-2">
-                                        <i class="ti ti-check text-success me-2"></i>
-                                        Surat Izin Keramaian
-                                    </li>
-                                    <li class="mb-2">
-                                        <i class="ti ti-check text-success me-2"></i>
-                                        Surat Izin Bepergian
-                                    </li>
-                                    <li class="mb-2">
-                                        <i class="ti ti-check text-success me-2"></i>
-                                        Surat Keterangan Tidak Mampu
-                                    </li>
-                                    <li class="mb-2">
-                                        <i class="ti ti-check text-success me-2"></i>
-                                        Surat Keterangan Lahir
-                                    </li>
+                                    @endforeach
                                 </ul>
                             </div>
                             
@@ -225,31 +187,5 @@
 @endsection
 
 @push('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM loaded, setting up form handler');
-    
-    const form = document.getElementById('service-form');
-    const successMessage = document.getElementById('success-message');
-    
-    if (form) {
-        console.log('Form found, adding event listener');
-        
-        form.addEventListener('submit', function(e) {
-            console.log('Form submitted!');
-            
-            // Show loading state
-            const submitBtn = form.querySelector('button[type="submit"]');
-            const originalText = submitBtn.innerHTML;
-            submitBtn.innerHTML = '<i class="ti ti-loader me-2"></i>Mengirim...';
-            submitBtn.disabled = true;
-            
-            // Let the form submit naturally
-            // The success message will be shown by the server response
-        });
-    } else {
-        console.error('Form not found!');
-    }
-});
-</script>
+<script src="{{ asset('js/layanan.js') }}"></script>
 @endpush

@@ -2,6 +2,7 @@
 
 @push('styles')
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="{{ asset('css/admin-custom.css') }}">
 <style>
     .page-header {
         background: linear-gradient(135deg, #2c5f2d 0%, #97bc62 100%);
@@ -473,6 +474,80 @@
     </div>
 </div>
 
+<!-- Modal Edit Berita -->
+<div class="modal modal-blur fade" id="modal-edit-berita" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-edit me-2"></i>
+                    Edit Berita
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="edit-news-form" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <label class="form-label">Judul Berita <span class="text-danger">*</span></label>
+                                <input type="text" name="title" class="form-control" placeholder="Masukkan judul berita" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Kategori <span class="text-danger">*</span></label>
+                                <select name="category" class="form-select" required>
+                                    <option value="">Pilih Kategori</option>
+                                    <option value="pemerintahan">Pemerintahan</option>
+                                    <option value="pembangunan">Pembangunan</option>
+                                    <option value="kesejahteraan">Kesejahteraan</option>
+                                    <option value="umum">Umum</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                <label class="form-label">Excerpt (Ringkasan)</label>
+                                <textarea name="excerpt" class="form-control" rows="3" placeholder="Ringkasan singkat berita (opsional)"></textarea>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                <label class="form-label">Konten Berita <span class="text-danger">*</span></label>
+                                <textarea name="content" class="form-control" rows="8" placeholder="Tulis konten berita di sini..." required></textarea>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Gambar Utama</label>
+                                <input type="file" name="featured_image" class="form-control" accept="image/*">
+                                <small class="text-muted">Format: JPG, PNG, GIF. Maksimal 2MB</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Status <span class="text-danger">*</span></label>
+                                <select name="status" class="form-select" required>
+                                    <option value="draft">Draft</option>
+                                    <option value="published">Diterbitkan</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-link" data-bs-dismiss="modal">Batal</button>
+                <button type="submit" form="edit-news-form" class="btn btn-primary">
+                    <i class="fas fa-save me-2"></i>Simpan Perubahan
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Modal Detail Berita -->
 <div class="modal modal-blur fade" id="modal-detail" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
@@ -493,5 +568,10 @@
 @endsection
 
 @push('scripts')
-<script src="{{ asset('js/admin-berita.js') }}"></script>
+<script src="{{ app()->environment('local') ? asset('js/admin-berita-simple.js') : url('js/admin-berita-simple.js') }}"></script>
+<script>
+    // Set base URL for API calls
+    window.API_BASE_URL = '{{ url("/") }}';
+    window.ADMIN_BASE_URL = '{{ url("/admin") }}';
+</script>
 @endpush

@@ -77,6 +77,7 @@ class NewsSeeder extends Seeder
         ];
 
         foreach ($newsData as $data) {
+            $data['slug'] = \Illuminate\Support\Str::slug($data['title']);
             News::create($data);
         }
     }

@@ -347,10 +347,10 @@
                                                     <i class="fas fa-eye me-1"></i>
                                                     <span class="d-none d-sm-inline">Lihat</span>
                                                 </button>
-                                                <button class="btn btn-outline-success" data-bs-toggle="tooltip" title="Download" onclick="downloadPublication({{ $publication->id }})" style="padding: 8px 12px; min-width: 40px;">
+                                                <a href="{{ route('admin.publications.download-page', $publication->id) }}" class="btn btn-outline-success" data-bs-toggle="tooltip" title="Download" style="padding: 8px 12px; min-width: 40px;">
                                                     <i class="fas fa-download me-1"></i>
                                                     <span class="d-none d-sm-inline">Download</span>
-                                                </button>
+                                                </a>
                                                 <button class="btn btn-outline-warning" data-bs-toggle="tooltip" title="Edit" onclick="editPublication({{ $publication->id }})" style="padding: 8px 12px; min-width: 40px;">
                                                     <i class="fas fa-edit me-1"></i>
                                                     <span class="d-none d-sm-inline">Edit</span>
@@ -510,4 +510,9 @@
 
 @push('scripts')
 <script src="{{ asset('js/admin-publikasi.js') }}"></script>
+<script>
+    // Set base URL for API calls
+    window.API_BASE_URL = '{{ url("/") }}';
+    window.ADMIN_BASE_URL = '{{ url("/admin") }}';
+</script>
 @endpush

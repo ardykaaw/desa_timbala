@@ -140,6 +140,18 @@
 <!-- Page body -->
 <div class="page-body">
     <div class="container-xl">
+        <!-- Error Messages -->
+        @if(session('error') || isset($error))
+        <div class="alert alert-danger alert-dismissible show" id="error-message">
+            <div class="d-flex">
+                <div>
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    <strong>Error!</strong> {{ session('error') ?? $error }}
+                </div>
+            </div>
+            <a class="btn-close" data-bs-dismiss="alert"></a>
+        </div>
+        @endif
         <!-- Stats Cards -->
         <div class="row row-deck row-cards mb-4">
             <div class="col-sm-6 col-lg-3">
@@ -484,6 +496,119 @@
     </div>
 </div>
 
+<!-- Modal Edit Layanan -->
+<div class="modal modal-blur fade" id="modal-edit-service" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-edit me-2"></i>
+                    Edit Layanan
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="edit-service-form" method="POST" action="">
+                    @csrf
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <label class="form-label">Nama Layanan <span class="text-danger">*</span></label>
+                                <input type="text" name="name" class="form-control" placeholder="Masukkan nama layanan" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Kategori <span class="text-danger">*</span></label>
+                                <select name="category" class="form-select" required>
+                                    <option value="">Pilih Kategori</option>
+                                    <option value="administrasi">Administrasi</option>
+                                    <option value="kependudukan">Kependudukan</option>
+                                    <option value="keuangan">Keuangan</option>
+                                    <option value="pembangunan">Pembangunan</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                <label class="form-label">Deskripsi Layanan <span class="text-danger">*</span></label>
+                                <textarea name="description" class="form-control" rows="4" placeholder="Deskripsikan layanan..." required></textarea>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Tipe Layanan <span class="text-danger">*</span></label>
+                                <select name="type" class="form-select" required>
+                                    <option value="online">Online</option>
+                                    <option value="offline">Offline</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Icon</label>
+                                <select name="icon" class="form-select">
+                                    <option value="id-card">KTP</option>
+                                    <option value="home">Domisili</option>
+                                    <option value="file-alt">Surat Keterangan</option>
+                                    <option value="money-bill-wave">PBB</option>
+                                    <option value="baby">Akta Kelahiran</option>
+                                    <option value="handshake">Bantuan Sosial</option>
+                                    <option value="briefcase">Usaha</option>
+                                    <option value="heart">Belum Menikah</option>
+                                    <option value="users">Keramaian</option>
+                                    <option value="plane">Bepergian</option>
+                                    <option value="hand-holding-heart">Tidak Mampu</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Hari Proses</label>
+                                <input type="number" name="processing_days" class="form-control" placeholder="3" min="1" max="30">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Biaya (Rp)</label>
+                                <input type="number" name="fee" class="form-control" placeholder="0" min="0">
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                <label class="form-label">Persyaratan</label>
+                                <textarea name="requirements" class="form-control" rows="3" placeholder="Masukkan persyaratan yang diperlukan..."></textarea>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                <label class="form-label">Prosedur</label>
+                                <textarea name="procedures" class="form-control" rows="3" placeholder="Masukkan prosedur yang harus diikuti..."></textarea>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="is_active" id="is_active" value="1">
+                                    <label class="form-check-label" for="is_active">
+                                        Layanan Aktif
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-link" data-bs-dismiss="modal">Batal</button>
+                <button type="submit" form="edit-service-form" class="btn btn-primary">
+                    <i class="fas fa-save me-2"></i>Simpan Perubahan
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Modal Update Status -->
 <div class="modal modal-blur fade" id="modal-status" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
@@ -521,4 +646,9 @@
 
 @push('scripts')
 <script src="{{ asset('js/admin-layanan.js') }}"></script>
+<script>
+    // Set base URL for API calls
+    window.API_BASE_URL = '{{ url("/") }}';
+    window.ADMIN_BASE_URL = '{{ url("/admin") }}';
+</script>
 @endpush

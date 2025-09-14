@@ -20,21 +20,42 @@ class AdminController extends Controller
     
     public function layanan()
     {
-        $services = Service::withCount('serviceRequests')->get();
-        $serviceRequests = ServiceRequest::with('service')->latest()->paginate(10);
-        
-        $stats = [
-            'total_services' => Service::count(),
-            'active_services' => Service::active()->count(),
-            'online_services' => Service::online()->count(),
-            'offline_services' => Service::offline()->count(),
-            'pending_requests' => ServiceRequest::pending()->count(),
-            'processing_requests' => ServiceRequest::processing()->count(),
-            'completed_requests' => ServiceRequest::completed()->count(),
-            'today_requests' => ServiceRequest::whereDate('created_at', today())->count()
-        ];
+        try {
+            $services = Service::withCount('serviceRequests')->get();
+            $serviceRequests = ServiceRequest::with('service')->latest()->paginate(10);
+            
+            $stats = [
+                'total_services' => Service::count(),
+                'active_services' => Service::active()->count(),
+                'online_services' => Service::online()->count(),
+                'offline_services' => Service::offline()->count(),
+                'pending_requests' => ServiceRequest::pending()->count(),
+                'processing_requests' => ServiceRequest::processing()->count(),
+                'completed_requests' => ServiceRequest::completed()->count(),
+                'today_requests' => ServiceRequest::whereDate('created_at', today())->count()
+            ];
 
-        return view('pages.admin.layanan-simple', compact('services', 'serviceRequests', 'stats'));
+            return view('pages.admin.layanan-simple', compact('services', 'serviceRequests', 'stats'));
+        } catch (\Exception $e) {
+            \Log::error('Error in layanan method: ' . $e->getMessage());
+            
+            // Return empty data on error
+            $services = collect();
+            $serviceRequests = collect();
+            $stats = [
+                'total_services' => 0,
+                'active_services' => 0,
+                'online_services' => 0,
+                'offline_services' => 0,
+                'pending_requests' => 0,
+                'processing_requests' => 0,
+                'completed_requests' => 0,
+                'today_requests' => 0
+            ];
+
+            return view('pages.admin.layanan-simple', compact('services', 'serviceRequests', 'stats'))
+                ->with('error', 'Terjadi kesalahan saat memuat data layanan');
+        }
     }
 
     public function storeService(Request $request)
@@ -407,5 +428,65 @@ class AdminController extends Controller
         
         // Simple redirect to file
         return redirect(asset('storage/' . $publication->file_path));
+    }
+
+    public function downloadPage($id)
+    {
+        $publication = Publication::findOrFail($id);
+        
+        // Add computed attributes
+        $publication->type_icon = $this->getTypeIcon($publication->type);
+        $publication->file_size_formatted = $this->formatFileSize($publication->file_size);
+        $publication->file_extension = pathinfo($publication->file_name, PATHINFO_EXTENSION);
+        
+        return view('pages.publication-download', compact('publication'));
+    }
+
+    public function editPublication($id)
+    {
+        $publication = Publication::findOrFail($id);
+        
+        return response()->json([
+            'success' => true,
+            'publication' => $publication
+        ]);
+    }
+
+    public function trackDownload($id)
+    {
+        $publication = Publication::findOrFail($id);
+        
+        // Increment download count
+        $publication->downloads = $publication->downloads + 1;
+        $publication->save();
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Download tracked successfully'
+        ]);
+    }
+
+    private function getTypeIcon($type)
+    {
+        $icons = [
+            'dokumen' => 'fas fa-file-pdf',
+            'video' => 'fas fa-video',
+            'audio' => 'fas fa-music',
+            'gambar' => 'fas fa-image'
+        ];
+        
+        return $icons[$type] ?? 'fas fa-file';
+    }
+
+    private function formatFileSize($bytes)
+    {
+        $units = ['B', 'KB', 'MB', 'GB'];
+        $bytes = max($bytes, 0);
+        $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
+        $pow = min($pow, count($units) - 1);
+        
+        $bytes /= pow(1024, $pow);
+        
+        return round($bytes, 2) . ' ' . $units[$pow];
     }
 }

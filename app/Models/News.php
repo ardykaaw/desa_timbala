@@ -2,77 +2,61 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str;
+use Carbon\Carbon;
 
 class News extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'title',
         'slug',
-        'content',
         'excerpt',
-        'featured_image',
+        'content',
         'category',
         'status',
+        'featured_image',
         'author',
-        'views',
-        'published_at'
+        'published_at',
+        'views'
     ];
 
     protected $casts = [
         'published_at' => 'datetime',
     ];
 
-    // Auto-generate slug from title
-    protected static function boot()
-    {
-        parent::boot();
-        
-        static::creating(function ($news) {
-            if (empty($news->slug)) {
-                $news->slug = Str::slug($news->title);
-            }
-        });
-        
-        static::updating(function ($news) {
-            if ($news->isDirty('title') && empty($news->slug)) {
-                $news->slug = Str::slug($news->title);
-            }
-        });
-    }
+    protected $appends = ['formatted_published_at'];
 
-    // Scope for published news
-    public function scopePublished($query)
-    {
-        return $query->where('status', 'published')
-                    ->whereNotNull('published_at')
-                    ->where('published_at', '<=', now());
-    }
-
-    // Scope for latest news
-    public function scopeLatest($query)
-    {
-        return $query->orderBy('published_at', 'desc');
-    }
-
-    // Get excerpt or generate from content
-    public function getExcerptAttribute($value)
-    {
-        if ($value) {
-            return $value;
-        }
-        
-        return Str::limit(strip_tags($this->content), 150);
-    }
-
-    // Get formatted published date
     public function getFormattedPublishedAtAttribute()
     {
-        return $this->published_at ? $this->published_at->format('d M Y') : null;
+        if ($this->published_at) {
+            return Carbon::parse($this->published_at)->locale('id')->isoFormat('DD MMMM YYYY, HH:mm');
+        }
+        return null;
     }
 
-    // Increment views
+    public function getRouteKeyName()
+    {
+        return 'slug';
+    }
+
+    public function scopePublished($query)
+    {
+        return $query->where('status', 'published');
+    }
+
+    public function scopeDraft($query)
+    {
+        return $query->where('status', 'draft');
+    }
+
+    public function scopeByCategory($query, $category)
+    {
+        return $query->where('category', $category);
+    }
+
     public function incrementViews()
     {
         $this->increment('views');

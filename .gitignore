@@ -22,3 +22,15 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Development files
+js/admin-berita-fixed.js
+js/admin-berita-robust.js
+js/admin-berita-simple.js
+js/layanan.js
+js/admin-layanan.js
+js/admin-publikasi.js
+public/css/
+public/dist/
+public/js/
+deploy.sh

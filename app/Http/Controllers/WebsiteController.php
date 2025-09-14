@@ -50,7 +50,7 @@ class WebsiteController extends Controller
 
     public function layanan()
     {
-        $services = Service::active()->get();
+        $services = Service::active()->orderBy('name')->get();
         return view('sections.layanan', compact('services'));
     }
 
