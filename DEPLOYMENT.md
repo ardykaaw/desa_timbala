@@ -120,10 +120,10 @@ server {
 git pull origin main
 ```
 
-### 2. Run Deploy Script
+### 2. Run Update Script (Recommended)
 ```bash
-chmod +x deploy-production.sh
-./deploy-production.sh
+chmod +x update-production.sh
+./update-production.sh
 ```
 
 ### 3. Manual Update (jika script tidak ada)
@@ -133,7 +133,23 @@ php artisan migrate --force
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
-php artisan storage:link
+
+# Copy JavaScript files
+mkdir -p public/js
+cp js/admin-berita-simple.js public/js/admin-berita-simple.js
+cp js/layanan.js public/js/layanan.js
+cp js/admin-layanan.js public/js/admin-layanan.js
+cp js/admin-publikasi.js public/js/admin-publikasi.js
+
+# Set permissions
+chmod -R 755 public/js
+chown -R www-data:www-data public/js
+```
+
+### 4. Initial Deploy (First Time)
+```bash
+chmod +x deploy-production.sh
+./deploy-production.sh
 ```
 
 ## Troubleshooting
