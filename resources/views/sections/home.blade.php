@@ -74,32 +74,39 @@
             </div>
             
             <!-- Regent Card - Right Column -->
-            <div class="col-lg-4 col-md-2 mb-4">
+            <div class="col-lg-4 col-md-12 mb-4">
                 <div class="regent-card">
                     <div class="regent-header">
                         <h3>Pemerintah Kabupaten</h3>
                     </div>
                     <div class="regent-photos">
                         <div class="regent-item">
-                            <img src="{{ asset('images/bupati.jpg') }}" alt="Bupati Bombana" class="regent-photo">
+                            <div style="width: 100px; height: 100px; overflow: hidden; border-radius: 50%; margin: 0 auto; background: #97bc62; position: relative;">
+                                <img src="{{ asset('images/Foto Bupati Bombana.png') }}" alt="Bupati Bombana" class="regent-photo" style="position: relative; top: 15px; width: 100%; height: auto;">
+                            </div>
                             <h4 class="regent-name">Ir. H. BURHANUDDIN. M.Si</h4>
                             <p class="regent-position">Bupati Bombana</p>
                         </div>
                         <div class="regent-item">
-                            <img src="{{ asset('images/wakil bupati.jpg') }}" alt="Wakil Bupati Bombana" class="regent-photo">
+                            <div style="width: 100px; height: 100px; overflow: hidden; border-radius: 50%; margin: 0 auto; background: #97bc62; position: relative;">
+                                <img src="{{ asset('images/Wakil Bupati.png') }}" alt="Wakil Bupati Bombana" class="regent-photo" style="position: relative; top: 15px; width: 100%; height: auto;">
+                            </div>
                             <h4 class="regent-name">AHMAD YANI, S.Pd., M.Pd</h4>
                             <p class="regent-position">Wakil Bupati Bombana</p>
                         </div>    
                         <div class="regent-item">
-                            <img src="{{ asset('images/ketua TP-PKK Kab. Bombana.jpg') }}" alt="Ketua TP-PKK Kab. Bombana" class="regent-photo">
+                            <div style="width: 100px; height: 100px; overflow: hidden; border-radius: 50%; margin: 0 auto; background: #97bc62; position: relative;">
+                                <img src="{{ asset('images/Ibu Bupati.png') }}" alt="Wakil Bupati Bombana" class="regent-photo" style="position: relative; top: 15px; width: 100%; height: auto;">
+                            </div>
                             <h4 class="regent-name">Hj.FATMAWATI KASIM MAREWA, S. Sos</h4>
                             <p class="regent-position">Ketua TP-PKK Kab. Bombana</p>
                         </div>
                         <div class="regent-item">
-                            <img src="{{ asset('images/ibu kades.jpg') }}" alt="Ketua TP-PKK Desa Timbala" class="regent-photo">
+                            <img src="{{ asset('images/ibu kades.jpg') }}" alt="Wakil Bupati Bombana" class="regent-photo">
                             <h4 class="regent-name">Hj. FITRIAH YASIR</h4>
                             <p class="regent-position">Ketua TP-PKK Desa Timbala</p>          
                         </div>
+                        a 
                     </div>
                 </div>
             </div>

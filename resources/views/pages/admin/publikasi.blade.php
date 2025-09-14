@@ -378,13 +378,38 @@
 
                         <!-- Pagination -->
                         @if($publications->hasPages())
-                        <div class="d-flex justify-content-between align-items-center mt-3">
-                            <div class="text-muted">
-                                Menampilkan {{ $publications->firstItem() }} - {{ $publications->lastItem() }} dari {{ $publications->total() }} publikasi
-                            </div>
-                            <div>
-                                {{ $publications->links() }}
-                            </div>
+                        <div class="d-flex justify-content-center mt-3">
+                            <ul class="pagination">
+                                {{-- Tombol sebelumnya --}}
+                                <li class="page-item {{ $publications->onFirstPage() ? 'disabled' : '' }}">
+                                    <a class="page-link" href="{{ $publications->previousPageUrl() ?? '#' }}" tabindex="-1"
+                                        aria-disabled="{{ $publications->onFirstPage() ? 'true' : 'false' }}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" stroke-linejoin="round" class="icon icon-1">
+                                            <path d="M15 6l-6 6l6 6"></path>
+                                        </svg>
+                                    </a>
+                                </li>
+
+                                {{-- Tombol nomor halaman --}}
+                                @foreach ($publications->getUrlRange(1, $publications->lastPage()) as $page => $url)
+                                    <li class="page-item {{ $publications->currentPage() == $page ? 'active' : '' }}">
+                                        <a class="page-link" href="{{ $url }}">{{ $page }}</a>
+                                    </li>
+                                @endforeach
+
+                                {{-- Tombol selanjutnya --}}
+                                <li class="page-item {{ $publications->hasMorePages() ? '' : 'disabled' }}">
+                                    <a class="page-link" href="{{ $publications->nextPageUrl() ?? '#' }}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" stroke-linejoin="round" class="icon icon-1">
+                                            <path d="M9 6l6 6l-6 6"></path>
+                                        </svg>
+                                    </a>
+                                </li>
+                            </ul>
                         </div>
                         @endif
                     </div>

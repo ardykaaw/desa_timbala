@@ -309,7 +309,7 @@
                                                         <th>Nama</th>
                                                         <th>Layanan</th>
                                                         <th>Status</th>
-                                                        <th>Tanggal</th>
+                                                        <th>Tanggal & Waktu Pengajuan</th>
                                                         <th>Aksi</th>
                                                     </tr>
                                                 </thead>
@@ -335,8 +335,13 @@
                                                             </span>
                                                         </td>
                                                         <td>
-                                                            <div>{{ $request->created_at->format('d M Y') }}</div>
-                                                            <div class="text-muted">{{ $request->created_at->format('H:i') }}</div>
+                                                            <div class="font-weight-medium">{{ $request->created_at->format('d M Y') }}</div>
+                                                            <div class="text-muted">
+                                                                <i class="fas fa-clock me-1"></i>{{ $request->created_at->format('H:i') }} WITA
+                                                            </div>
+                                                            <div class="text-muted small">
+                                                                <i class="fas fa-birthday-cake me-1"></i>{{ \Carbon\Carbon::parse($request->birth_date)->format('d M Y') }}
+                                                            </div>
                                                         </td>
                                                         <td>
                                                             <div class="btn-group" role="group">
@@ -355,8 +360,45 @@
                                                 </tbody>
                                             </table>
                                         </div>
-                                        {{ $serviceRequests->links() }}
                                     </div>
+                                    <div class="card-footer pb-0">
+                                        @if ($serviceRequests->hasPages())
+                                            <div class="d-flex justify-content-center">
+                                                <ul class="pagination">
+                                                    {{-- Tombol sebelumnya --}}
+                                                    <li class="page-item {{ $serviceRequests->onFirstPage() ? 'disabled' : '' }}">
+                                                        <a class="page-link" href="{{ $serviceRequests->previousPageUrl() ?? '#' }}" tabindex="-1"
+                                                            aria-disabled="{{ $serviceRequests->onFirstPage() ? 'true' : 'false' }}">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                                                stroke-linecap="round" stroke-linejoin="round" class="icon icon-1">
+                                                                <path d="M15 6l-6 6l6 6"></path>
+                                                            </svg>
+                                                        </a>
+                                                    </li>
+
+                                                    {{-- Tombol nomor halaman --}}
+                                                    @foreach ($serviceRequests->getUrlRange(1, $serviceRequests->lastPage()) as $page => $url)
+                                                        <li class="page-item {{ $serviceRequests->currentPage() == $page ? 'active' : '' }}">
+                                                            <a class="page-link" href="{{ $url }}">{{ $page }}</a>
+                                                        </li>
+                                                    @endforeach
+
+                                                    {{-- Tombol selanjutnya --}}
+                                                    <li class="page-item {{ $serviceRequests->hasMorePages() ? '' : 'disabled' }}">
+                                                        <a class="page-link" href="{{ $serviceRequests->nextPageUrl() ?? '#' }}">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                                                stroke-linecap="round" stroke-linejoin="round" class="icon icon-1">
+                                                                <path d="M9 6l6 6l-6 6"></path>
+                                                            </svg>
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
                                 </div>
                             </div>
                         </div>

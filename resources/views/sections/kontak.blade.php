@@ -23,7 +23,7 @@
                     <h4><i class="fas fa-phone"></i> Kontak</h4>
                     <p>Telepon: (0274) 123456<br>
                     Email: desatimbalabersatu77@gmail.com<br>
-                    Website: www.desatimbala.bombana.com</p>
+                    Website: www.desatimbala.id</p>
                 </div>
             </div>
             <div class="col-lg-6">

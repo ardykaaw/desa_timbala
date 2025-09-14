@@ -16,8 +16,9 @@ class DisableCsrfForService
     public function handle(Request $request, Closure $next): Response
     {
         // Disable CSRF verification for service submission
-        if ($request->is('layanan/submit') || $request->is('test/service-submit') || $request->is('api/service-submit')) {
-            $request->setLaravelSession($request->getSession());
+        if ($request->is('layanan/submit') || $request->is('test/service-submit') || $request->is('api/service-submit') || $request->is('debug/service-submit')) {
+            // Skip CSRF verification by removing the token requirement
+            $request->session()->regenerateToken();
             return $next($request);
         }
         

@@ -52,7 +52,7 @@ Route::post('/debug/service-submit', function(\Illuminate\Http\Request $request)
         'headers' => $request->headers->all(),
         'data' => $request->all()
     ]);
-});
+})->middleware([\App\Http\Middleware\DisableCsrfForService::class]);
 
 // Test route without CSRF for debugging
 Route::post('/test/service-submit', [WebsiteController::class, 'submitServiceRequest'])->withoutMiddleware(['web']);
@@ -77,6 +77,10 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/admin/email-config', [AdminController::class, 'emailConfig'])->name('admin.email-config');
     Route::put('/admin/email-config', [AdminController::class, 'updateEmailConfig'])->name('admin.email-config.update');
     Route::post('/admin/email-config/test', [AdminController::class, 'testEmail'])->name('admin.email-config.test');
+    
+    // Profile routes
+    Route::get('/admin/profile', [AdminController::class, 'profile'])->name('admin.profile');
+    Route::put('/admin/profile/password', [AdminController::class, 'updatePassword'])->name('admin.profile.update-password');
 
     // News CRUD routes
     Route::post('/admin/news', [NewsController::class, 'store'])->name('admin.news.store');

@@ -618,4 +618,59 @@ class AdminController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Show profile page
+     */
+    public function profile()
+    {
+        return view('pages.admin.profile');
+    }
+
+    /**
+     * Update user password
+     */
+    public function updatePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required',
+            'password' => 'required|min:8|confirmed',
+            'password_confirmation' => 'required'
+        ], [
+            'current_password.required' => 'Password lama harus diisi',
+            'password.required' => 'Password baru harus diisi',
+            'password.min' => 'Password baru minimal 8 karakter',
+            'password.confirmed' => 'Konfirmasi password tidak sesuai',
+            'password_confirmation.required' => 'Konfirmasi password harus diisi'
+        ]);
+
+        try {
+            $user = auth()->user();
+            
+            // Check current password
+            if (!password_verify($request->current_password, $user->password)) {
+                return back()->withErrors(['current_password' => 'Password lama tidak sesuai']);
+            }
+
+            // Update password
+            $user->update([
+                'password' => bcrypt($request->password)
+            ]);
+
+            \Log::info('Password updated successfully', [
+                'user_id' => $user->id,
+                'user_email' => $user->email
+            ]);
+
+            return back()->with('success', 'Password berhasil diupdate!');
+
+        } catch (\Exception $e) {
+            \Log::error('Failed to update password', [
+                'user_id' => auth()->id(),
+                'error' => $e->getMessage()
+            ]);
+
+            return back()->with('error', 'Gagal mengupdate password: ' . $e->getMessage());
+        }
+    }
 }
