@@ -76,7 +76,9 @@ class WebsiteController extends Controller
                 'isJson' => $request->isJson(),
                 'contentType' => $request->header('Content-Type'),
                 'accept' => $request->header('Accept'),
-                'xRequestedWith' => $request->header('X-Requested-With')
+                'xRequestedWith' => $request->header('X-Requested-With'),
+                'csrfToken' => $request->header('X-CSRF-TOKEN'),
+                'sessionToken' => $request->input('_token')
             ]);
             
             $request->validate([

@@ -187,5 +187,11 @@
 @endsection
 
 @push('scripts')
+<script>
+    // Set CSRF token globally
+    window.Laravel = {
+        csrfToken: '{{ csrf_token() }}'
+    };
+</script>
 <script src="{{ asset('js/layanan.js') }}"></script>
 @endpush

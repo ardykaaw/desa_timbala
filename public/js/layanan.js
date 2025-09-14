@@ -21,20 +21,32 @@ document.addEventListener('DOMContentLoaded', function() {
             // Get form data
             const formData = new FormData(this);
             
-            // Get CSRF token
-            const csrfToken = document.querySelector('meta[name="csrf-token"]');
+            // Get CSRF token from multiple sources
+            let csrfToken = document.querySelector('meta[name="csrf-token"]');
+            if (!csrfToken) {
+                // Try to get from form input
+                csrfToken = form.querySelector('input[name="_token"]');
+            }
+            if (!csrfToken) {
+                // Try to get from window object
+                csrfToken = window.Laravel?.csrfToken;
+            }
+            
             if (!csrfToken) {
                 console.error('CSRF token not found!');
                 showAlert('error', 'CSRF token tidak ditemukan. Silakan refresh halaman.');
                 return;
             }
             
+            const tokenValue = csrfToken.getAttribute ? csrfToken.getAttribute('content') : csrfToken;
+            console.log('Using CSRF token:', tokenValue);
+            
             // Submit form via AJAX
             fetch(this.action, {
                 method: 'POST',
                 body: formData,
                 headers: {
-                    'X-CSRF-TOKEN': csrfToken.getAttribute('content'),
+                    'X-CSRF-TOKEN': tokenValue,
                     'Accept': 'application/json',
                     'X-Requested-With': 'XMLHttpRequest'
                 }

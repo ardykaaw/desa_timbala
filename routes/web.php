@@ -52,6 +52,12 @@ Route::post('/debug/service-submit', function(\Illuminate\Http\Request $request)
     ]);
 });
 
+// Test route without CSRF for debugging
+Route::post('/test/service-submit', [WebsiteController::class, 'submitServiceRequest'])->withoutMiddleware(['web']);
+
+// Alternative service submit route with different middleware
+Route::post('/api/service-submit', [WebsiteController::class, 'submitServiceRequest'])->middleware('api');
+
 // Publication routes
 Route::get('/publikasi/{id}/download', [WebsiteController::class, 'downloadPublication'])->name('publication.download');
 Route::get('/publikasi/{id}/detail', [WebsiteController::class, 'getPublication'])->name('publication.detail');
