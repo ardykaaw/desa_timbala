@@ -45,6 +45,9 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/admin/berita', [NewsController::class, 'index'])->name('admin.berita');
     Route::get('/admin/layanan', [AdminController::class, 'layanan'])->name('admin.layanan');
     Route::get('/admin/publikasi', [AdminController::class, 'publikasi'])->name('admin.publikasi');
+    Route::get('/admin/email-config', [AdminController::class, 'emailConfig'])->name('admin.email-config');
+    Route::put('/admin/email-config', [AdminController::class, 'updateEmailConfig'])->name('admin.email-config.update');
+    Route::post('/admin/email-config/test', [AdminController::class, 'testEmail'])->name('admin.email-config.test');
 
     // News CRUD routes
     Route::post('/admin/news', [NewsController::class, 'store'])->name('admin.news.store');

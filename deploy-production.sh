@@ -48,5 +48,11 @@ echo "👤 Setting ownership..."
 chown -R www-data:www-data storage
 chown -R www-data:www-data bootstrap/cache
 
+# 9. Set admin email configuration
+echo "📧 Setting admin email configuration..."
+php artisan config:cache
+echo "Admin email set to: ardykaaw26@gmail.com"
+
 echo "✅ Deployment completed successfully!"
 echo "🌐 Your application is ready for production!"
+echo "📧 Admin notifications will be sent to: ardykaaw26@gmail.com"

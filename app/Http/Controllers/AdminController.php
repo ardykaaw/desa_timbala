@@ -7,8 +7,10 @@ use App\Models\News;
 use App\Models\Service;
 use App\Models\ServiceRequest;
 use App\Models\Publication;
+use App\Mail\ServiceNotificationMail;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Mail;
 
 class AdminController extends Controller
 {
@@ -84,6 +86,25 @@ class AdminController extends Controller
             'service_name' => $service->name,
             'is_active' => $service->is_active
         ]);
+
+        // Send email notification if enabled
+        if (config('admin.notifications.service_created', true)) {
+            try {
+                $adminEmail = config('admin.email');
+                if ($adminEmail) {
+                    Mail::to($adminEmail)->send(new ServiceNotificationMail($service, $adminEmail));
+                    \Log::info('Service notification email sent', [
+                        'service_id' => $service->id,
+                        'admin_email' => $adminEmail
+                    ]);
+                }
+            } catch (\Exception $e) {
+                \Log::error('Failed to send service notification email', [
+                    'service_id' => $service->id,
+                    'error' => $e->getMessage()
+                ]);
+            }
+        }
 
         return response()->json([
             'success' => true,
@@ -520,5 +541,81 @@ class AdminController extends Controller
         $bytes /= pow(1024, $pow);
         
         return round($bytes, 2) . ' ' . $units[$pow];
+    }
+
+    public function emailConfig()
+    {
+        return view('pages.admin.email-config');
+    }
+
+    public function updateEmailConfig(Request $request)
+    {
+        $request->validate([
+            'admin_email' => 'required|email',
+            'admin_name' => 'required|string|max:255',
+            'notify_service_created' => 'boolean',
+            'notify_service_updated' => 'boolean',
+            'notify_service_deleted' => 'boolean',
+            'notify_news_created' => 'boolean',
+        ]);
+
+        try {
+            // Update config file
+            $configPath = config_path('admin.php');
+            $config = include $configPath;
+            
+            $config['email'] = $request->admin_email;
+            $config['name'] = $request->admin_name;
+            $config['notifications']['service_created'] = $request->has('notify_service_created');
+            $config['notifications']['service_updated'] = $request->has('notify_service_updated');
+            $config['notifications']['service_deleted'] = $request->has('notify_service_deleted');
+            $config['notifications']['news_created'] = $request->has('notify_news_created');
+            
+            file_put_contents($configPath, '<?php return ' . var_export($config, true) . ';');
+            
+            return redirect()->back()->with('success', 'Konfigurasi email berhasil diperbarui!');
+            
+        } catch (\Exception $e) {
+            \Log::error('Failed to update email config', ['error' => $e->getMessage()]);
+            return redirect()->back()->with('error', 'Gagal memperbarui konfigurasi email: ' . $e->getMessage());
+        }
+    }
+
+    public function testEmail(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email'
+        ]);
+
+        try {
+            $service = Service::first();
+            
+            if (!$service) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak ada layanan di database untuk test email'
+                ], 400);
+            }
+
+            Mail::to($request->email)->send(new ServiceNotificationMail($service, $request->email));
+            
+            \Log::info('Test email sent', ['email' => $request->email]);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Email test berhasil dikirim ke ' . $request->email
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Failed to send test email', [
+                'email' => $request->email,
+                'error' => $e->getMessage()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengirim email test: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

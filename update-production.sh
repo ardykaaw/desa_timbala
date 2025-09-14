@@ -33,9 +33,13 @@ cp js/layanan.js public/js/layanan.js
 cp js/admin-layanan.js public/js/admin-layanan.js
 cp js/admin-publikasi.js public/js/admin-publikasi.js
 
-# 6. Optimize for production
-echo "⚡ Optimizing for production..."
+# 6. Set admin email configuration
+echo "📧 Setting admin email configuration..."
 php artisan config:cache
+echo "Admin email set to: ardykaaw26@gmail.com"
+
+# 7. Optimize for production
+echo "⚡ Optimizing for production..."
 php artisan route:cache
 php artisan view:cache
 
