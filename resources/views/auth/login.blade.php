@@ -103,9 +103,7 @@
                                         </button>
                                     </div>
                                 </form>
-                                <div class="text-center text-secondary mt-3">
-                                    Belum memilik akun? <a href="/register" tabindex="-1">Daftar</a>
-                                </div>
+                                
                             </div>
                         </div>
                     </div>
