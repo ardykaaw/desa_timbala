@@ -67,9 +67,17 @@ class WebsiteController extends Controller
     public function submitServiceRequest(Request $request)
     {
         try {
-            \Log::info('Service request submitted', $request->all());
-            \Log::info('Request method: ' . $request->method());
-            \Log::info('Request headers: ', $request->headers->all());
+            \Log::info('Service request submitted', [
+                'data' => $request->all(),
+                'method' => $request->method(),
+                'headers' => $request->headers->all(),
+                'ajax' => $request->ajax(),
+                'wantsJson' => $request->wantsJson(),
+                'isJson' => $request->isJson(),
+                'contentType' => $request->header('Content-Type'),
+                'accept' => $request->header('Accept'),
+                'xRequestedWith' => $request->header('X-Requested-With')
+            ]);
             
             $request->validate([
                 'service_type' => 'required|string',
@@ -130,21 +138,22 @@ class WebsiteController extends Controller
                 'service_name' => $service->name
             ]);
 
-            // Return JSON response for AJAX requests
-            if ($request->ajax() || $request->wantsJson()) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Pengajuan layanan berhasil dikirim! Nomor pengajuan akan dikirim via SMS/WhatsApp.',
-                    'data' => [
-                        'service_request_id' => $serviceRequest->id,
-                        'service_name' => $service->name,
-                        'status' => 'pending'
-                    ]
-                ]);
-            }
-
-            // Return redirect for regular form submissions
-            return redirect()->back()->with('success', 'Pengajuan layanan berhasil dikirim! Nomor pengajuan akan dikirim via SMS/WhatsApp.');
+            // Always return JSON response for better debugging
+            \Log::info('Returning JSON response', [
+                'ajax' => $request->ajax(),
+                'wantsJson' => $request->wantsJson(),
+                'accept' => $request->header('Accept')
+            ]);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Pengajuan layanan berhasil dikirim! Nomor pengajuan akan dikirim via SMS/WhatsApp.',
+                'data' => [
+                    'service_request_id' => $serviceRequest->id,
+                    'service_name' => $service->name,
+                    'status' => 'pending'
+                ]
+            ]);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             \Log::error('Validation error in submitServiceRequest', [
@@ -152,15 +161,11 @@ class WebsiteController extends Controller
                 'request_data' => $request->all()
             ]);
 
-            if ($request->ajax() || $request->wantsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Terjadi kesalahan validasi data',
-                    'errors' => $e->errors()
-                ], 422);
-            }
-
-            return redirect()->back()->withErrors($e->errors())->withInput();
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan validasi data',
+                'errors' => $e->errors()
+            ], 422);
         } catch (\Exception $e) {
             \Log::error('Error in submitServiceRequest', [
                 'error' => $e->getMessage(),
@@ -168,15 +173,11 @@ class WebsiteController extends Controller
                 'request_data' => $request->all()
             ]);
 
-            if ($request->ajax() || $request->wantsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Terjadi kesalahan saat mengirim pengajuan. Silakan coba lagi.',
-                    'error' => $e->getMessage()
-                ], 500);
-            }
-
-            return redirect()->back()->with('error', 'Terjadi kesalahan saat mengirim pengajuan. Silakan coba lagi.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat mengirim pengajuan. Silakan coba lagi.',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 

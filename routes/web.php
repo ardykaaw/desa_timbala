@@ -31,6 +31,27 @@ Route::post('/berita/{id}/increment-views', [WebsiteController::class, 'incremen
 // Service routes
 Route::post('/layanan/submit', [WebsiteController::class, 'submitServiceRequest'])->name('service.submit');
 
+// Debug route for service submission
+Route::post('/debug/service-submit', function(\Illuminate\Http\Request $request) {
+    \Log::info('Debug service submit called', [
+        'method' => $request->method(),
+        'headers' => $request->headers->all(),
+        'data' => $request->all(),
+        'ajax' => $request->ajax(),
+        'wantsJson' => $request->wantsJson(),
+        'isJson' => $request->isJson()
+    ]);
+    
+    return response()->json([
+        'debug' => true,
+        'method' => $request->method(),
+        'ajax' => $request->ajax(),
+        'wantsJson' => $request->wantsJson(),
+        'headers' => $request->headers->all(),
+        'data' => $request->all()
+    ]);
+});
+
 // Publication routes
 Route::get('/publikasi/{id}/download', [WebsiteController::class, 'downloadPublication'])->name('publication.download');
 Route::get('/publikasi/{id}/detail', [WebsiteController::class, 'getPublication'])->name('publication.detail');
