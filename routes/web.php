@@ -29,7 +29,9 @@ Route::get('/berita/{slug}', [WebsiteController::class, 'newsDetail'])->name('ne
 Route::post('/berita/{id}/increment-views', [WebsiteController::class, 'incrementViews'])->name('news.increment-views');
 
 // Service routes
-Route::post('/layanan/submit', [WebsiteController::class, 'submitServiceRequest'])->name('service.submit');
+Route::post('/layanan/submit', [WebsiteController::class, 'submitServiceRequest'])
+    ->middleware([\App\Http\Middleware\DisableCsrfForService::class])
+    ->name('service.submit');
 
 // Debug route for service submission
 Route::post('/debug/service-submit', function(\Illuminate\Http\Request $request) {
